@@ -1,37 +1,12 @@
-﻿// ****************************************************************************
-// UNCLASSIFIED//FOUO
+// ****************************************************************************
+// CUI
 //
 // The Advanced Framework for Simulation, Integration, and Modeling (AFSIM)
 //
 // Copyright 2003-2015 The Boeing Company. All rights reserved.
 //
-// Distribution authorized to the Department of Defense and U.S. DoD contractors
-// REL AUS, CAN, UK, NZ. You may not use this file except in compliance with the
-// terms and conditions of 48 C.F.R. 252.204-7000 (Disclosure of Information),
-// 48 C.F.R. 252.227-7025 (Limitations on the Use or Disclosure of Government-
-// Furnished Information Marked with Restrictive Legends), and the AFSIM
-// Memorandum of Understanding or Information Transfer Agreement as applicable.
-// All requests for this software must be referred to the Air Force Research
-// Laboratory Aerospace Systems Directorate, 2130 8th St., Wright-Patterson AFB,
-// OH 45433. This software is provided "as is" without warranties of any kind.
-//
-// This information is furnished on the condition that it will not be released
-// to another nation without specific authority of the Department of the Air Force
-// of the United States, that it will be used for military purposes only, that
-// individual or corporate rights originating in the information, whether patented
-// or not, will be respected, that the recipient will report promptly to the
-// United States any known or suspected compromise, and that the information will
-// be provided substantially the same degree of security afforded it by the
-// Department of Defense of the United States. Also, regardless of any other
-// markings on the document, it will not be downgraded or declassified without
-// written approval from the originating U.S. agency.
-//
-// WARNING - EXPORT CONTROLLED
-// This document contains technical data whose export is restricted by the
-// Arms Export Control Act (Title 22, U.S.C. Sec 2751 et seq.) or the Export
-// Administration Act of 1979, as amended, Title 50 U.S.C., App. 2401 et seq.
-// Violations of these export laws are subject to severe criminal penalties.
-// Disseminate in accordance with provisions of DoD Directive 5230.25.
+// The use, dissemination or disclosure of data in this file is subject to
+// limitation or restriction. See accompanying README and LICENSE for details.
 // ****************************************************************************
 
 #include "WsfEM_Attenuation.hpp"
@@ -47,34 +22,29 @@
 #include "WsfPlatform.hpp"
 
 // =================================================================================================
-//•	功能 : 初始化衰减对象，默认禁用调试模式(mDebugEnabled = false)，并启用端点排序(mSortEndPoints = true)。
-//•	端点排序 : 确保路径的起点和终点按照高度排序，便于计算。
 WsfEM_Attenuation::WsfEM_Attenuation()
-   : WsfObject(),
-     mDebugEnabled(false),
-     mSortEndPoints(true)
+   : WsfObject()
+   , mDebugEnabled(false)
+   , mSortEndPoints(true)
 {
 }
 
 // =================================================================================================
 WsfEM_Attenuation::WsfEM_Attenuation(const WsfEM_Attenuation& aSrc)
-   : WsfObject(aSrc),
-     mDebugEnabled(aSrc.mDebugEnabled),
-     mSortEndPoints(aSrc.mSortEndPoints)
+   : WsfObject(aSrc)
+   , mDebugEnabled(aSrc.mDebugEnabled)
+   , mSortEndPoints(aSrc.mSortEndPoints)
 {
 }
 
 // =================================================================================================
-//virtual
-WsfEM_Attenuation::~WsfEM_Attenuation()
-{
-}
+// virtual
+WsfEM_Attenuation::~WsfEM_Attenuation() {}
 
 // =================================================================================================
 //! Initialize the attenuation object.
 //! @param aXmtrRcvrPtr The transmitter/receiver to which the attenuation object is attached.
-//•	功能: 初始化衰减对象，关联到一个发射机/接收机对象。
-//•	注意 : 该方法是虚函数，具体的衰减模型可以重写此方法以实现自定义初始化逻辑。
+// virtual
 bool WsfEM_Attenuation::Initialize(WsfEM_XmtrRcvr* aXmtrRcvrPtr)
 {
    return true;
@@ -85,19 +55,17 @@ bool WsfEM_Attenuation::Initialize(WsfEM_XmtrRcvr* aXmtrRcvrPtr)
 //! @param aXmtrPtr The transmitter to which the attenuation object is attached.
 //! @note This method is deprecated and is provided simply so existing models will continue to
 //! function. All new models should use the form that accepts a WsfEM_XmtrRcvr.
-//virtual
+// virtual
 bool WsfEM_Attenuation::Initialize(WsfEM_Xmtr* aXmtrPtr)
 {
    return Initialize(static_cast<WsfEM_XmtrRcvr*>(aXmtrPtr));
 }
 
 // =================================================================================================
-//•	功能: 处理输入命令。
-//•	支持的命令 :
-//•	debug : 启用调试模式。
+// virtual
 bool WsfEM_Attenuation::ProcessInput(UtInput& aInput)
 {
-   bool myCommand = true;
+   bool        myCommand = true;
    std::string command(aInput.GetCommand());
 
    if (command == "debug")
@@ -122,12 +90,7 @@ bool WsfEM_Attenuation::ProcessInput(UtInput& aInput)
 //! @note This is the public interface to the attenuation calculations that is called by WsfEM_Interaction.
 //! A derived class may implement this method for the most general capabilities, or may implement the
 //! protected 4-argument form which is called by the base class implementation of this form.
-//•	功能: 计算信号在指定路径上的衰减因子。
-//•	逻辑 :
-//1.	调用 GetRangeElevationAltitude 获取路径的几何信息（距离、仰角、高度）。
-//2.	如果路径距离大于 1 米，则根据频率计算衰减因子。
-//3.	调用受保护的虚函数 ComputeAttenuationFactorP 执行具体的衰减计算。
-//•	返回值 : 衰减因子，范围为[0, 1]。
+// virtual
 double WsfEM_Attenuation::ComputeAttenuationFactor(WsfEM_Interaction&          aInteraction,
                                                    WsfEnvironment&             aEnvironment,
                                                    WsfEM_Interaction::Geometry aGeometry)
@@ -167,14 +130,8 @@ double WsfEM_Attenuation::ComputeAttenuationFactor(WsfEM_Interaction&          a
 //! The base class 3-argument form calls this form, which as a signature that is typical for many RF models.
 //!
 //! @note This form is protected and can ONLY be called by the base class 3-argument form.
-//protected virtual
-//•	功    能 : 计算信号在路径上的衰减因子（具体实现由子类提供）。
-//•	默认实现 : 返回 1.0，表示无衰减。
-//•	设    计 : 该方法是受保护的虚函数，仅供基类调用。
-double WsfEM_Attenuation::ComputeAttenuationFactorP(double aRange,
-                                                    double aElevation,
-                                                    double aAltitude,
-                                                    double aFrequency)
+// protected virtual
+double WsfEM_Attenuation::ComputeAttenuationFactorP(double aRange, double aElevation, double aAltitude, double aFrequency)
 {
    return 1.0;
 }
@@ -226,8 +183,7 @@ void WsfEM_Attenuation::GetAltitudesAndGroundRange(WsfEM_Interaction&          a
    }
 
    // Exchange the altitudes if end point sorting was requested and the first point is higher.
-   if (mSortEndPoints &&
-       (aAltitude1 > aAltitude2))
+   if (mSortEndPoints && (aAltitude1 > aAltitude2))
    {
       std::swap(aAltitude1, aAltitude2);
    }
@@ -252,13 +208,9 @@ void WsfEM_Attenuation::GetAltitudesAndGroundRange(WsfEM_Interaction&          a
 //! the two altitudes and the elevation angle will be computed relative to object at the lower altitude.
 //! 'sort_end_points' is typically false only by explicit user-input in WsfTabularAttenuation when the
 //! table does not assume paths are symmetric.
-//protected
-//•	功能 : 获取路径的几何信息（斜距、仰角、高度）。
-//•	逻辑 :
-//1.	根据路径的几何关系（发射机到目标、目标到接收机等）调用不同的计算逻辑。
-//2.	如果路径无效，抛出异常。
+// protected
 #include <iostream>
-using namespace std;
+
 void WsfEM_Attenuation::GetRangeElevationAltitude(WsfEM_Interaction&          aInteraction,
                                                   WsfEM_Interaction::Geometry aGeometry,
                                                   double&                     aRange,
@@ -267,24 +219,39 @@ void WsfEM_Attenuation::GetRangeElevationAltitude(WsfEM_Interaction&          aI
 {
    if (aGeometry == WsfEM_Interaction::cXMTR_TO_TARGET)
    {
-      GetRangeElevationAltitude(aInteraction.GetTransmitter()->GetPlatform(), aInteraction.GetTarget(),
-                                aInteraction.mXmtrLoc, aInteraction.mTgtLoc,
-                                aInteraction.mXmtrToTgt, aInteraction.mTgtToXmtr,
-                                aRange, aElevation, aAltitude);
+      GetRangeElevationAltitude(aInteraction.GetTransmitter()->GetPlatform(),
+                                aInteraction.GetTarget(),
+                                aInteraction.mXmtrLoc,
+                                aInteraction.mTgtLoc,
+                                aInteraction.mXmtrToTgt,
+                                aInteraction.mTgtToXmtr,
+                                aRange,
+                                aElevation,
+                                aAltitude);
    }
    else if (aGeometry == WsfEM_Interaction::cTARGET_TO_RCVR)
    {
-      GetRangeElevationAltitude(aInteraction.GetReceiver()->GetPlatform(), aInteraction.GetTarget(),
-                                aInteraction.mRcvrLoc, aInteraction.mTgtLoc,
-                                aInteraction.mRcvrToTgt, aInteraction.mTgtToRcvr,
-                                aRange, aElevation, aAltitude);
+      GetRangeElevationAltitude(aInteraction.GetReceiver()->GetPlatform(),
+                                aInteraction.GetTarget(),
+                                aInteraction.mRcvrLoc,
+                                aInteraction.mTgtLoc,
+                                aInteraction.mRcvrToTgt,
+                                aInteraction.mTgtToRcvr,
+                                aRange,
+                                aElevation,
+                                aAltitude);
    }
    else if (aGeometry == WsfEM_Interaction::cXMTR_TO_RCVR)
    {
-      GetRangeElevationAltitude(aInteraction.GetTransmitter()->GetPlatform(), aInteraction.GetReceiver()->GetPlatform(),
-                                aInteraction.mXmtrLoc, aInteraction.mRcvrLoc,
-                                aInteraction.mXmtrToRcvr, aInteraction.mRcvrToXmtr,
-                                aRange, aElevation, aAltitude);
+      GetRangeElevationAltitude(aInteraction.GetTransmitter()->GetPlatform(),
+                                aInteraction.GetReceiver()->GetPlatform(),
+                                aInteraction.mXmtrLoc,
+                                aInteraction.mRcvrLoc,
+                                aInteraction.mXmtrToRcvr,
+                                aInteraction.mRcvrToXmtr,
+                                aRange,
+                                aElevation,
+                                aAltitude);
    }
    else
    {
@@ -293,10 +260,7 @@ void WsfEM_Attenuation::GetRangeElevationAltitude(WsfEM_Interaction&          aI
 }
 
 // =================================================================================================
-//•	功能: 计算路径的仰角、距离和参考高度。
-//•	逻辑 :
-//1.	根据路径的起点和终点计算仰角。
-//2.	如果启用了端点排序，则确保高度较低的点作为参考点。
+// private
 void WsfEM_Attenuation::GetRangeElevationAltitude(WsfPlatform*                           aSrcPlatformPtr,
                                                   WsfPlatform*                           aTgtPlatformPtr,
                                                   const WsfEM_Interaction::LocationData& aSrcLoc,
@@ -314,8 +278,7 @@ void WsfEM_Attenuation::GetRangeElevationAltitude(WsfPlatform*                  
 
    double otherLocNED[3];
    double referenceAlt = aSrcLoc.mAlt;
-   if ((aSrcLoc.mAlt <= aTgtLoc.mAlt) ||
-       (! mSortEndPoints))
+   if ((aSrcLoc.mAlt <= aTgtLoc.mAlt) || (!mSortEndPoints))
    {
       aSrcPlatformPtr->ConvertWCSVectorToNED(otherLocNED, aSrcToTgt.mUnitVecWCS);
    }
@@ -325,15 +288,15 @@ void WsfEM_Attenuation::GetRangeElevationAltitude(WsfPlatform*                  
       aTgtPlatformPtr->ConvertWCSVectorToNED(otherLocNED, aTgtToSrc.mUnitVecWCS);
    }
 
-   double elevation = UtMath::cPI_OVER_2;         // Assume other point is directly overhead.
-   double neDist = sqrt((otherLocNED[0] * otherLocNED[0]) + (otherLocNED[1] * otherLocNED[1]));
+   double elevation = UtMath::cPI_OVER_2; // Assume other point is directly overhead.
+   double neDist    = sqrt((otherLocNED[0] * otherLocNED[0]) + (otherLocNED[1] * otherLocNED[1]));
    if (neDist > 0.0)
    {
-      elevation = atan2(- otherLocNED[2], neDist);
+      elevation = atan2(-otherLocNED[2], neDist);
    }
    aElevation = elevation;
-   aRange = aSrcToTgt.mRange;
-   aAltitude = referenceAlt;
+   aRange     = aSrcToTgt.mRange;
+   aAltitude  = referenceAlt;
 }
 
 // =================================================================================================
